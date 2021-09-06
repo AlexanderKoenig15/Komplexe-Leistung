@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name Schaltplan-rescue)(type Legacy)(uri ${KIPRJMOD}/Schaltplan-rescue.lib)(options "")(descr ""))
+)
