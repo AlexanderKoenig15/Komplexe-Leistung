@@ -29,7 +29,7 @@ L Sensor:BME280 U?
 U 1 1 6133FB63
 P 1150 3350
 F 0 "U?" V 675 3350 50  0000 C CNN
-F 1 "BME280" V 584 3350 50  0000 C CNN
+F 1 "BME280 Outside" V 584 3350 50  0000 C CNN
 F 2 "Package_LGA:Bosch_LGA-8_2.5x2.5mm_P0.65mm_ClockwisePinNumbering" H 2650 2900 50  0001 C CNN
 F 3 "https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BME280-DS002.pdf" H 1150 3150 50  0001 C CNN
 	1    1150 3350
@@ -95,7 +95,7 @@ L Sensor:BME280 U?
 U 1 1 61336A88
 P 6650 2950
 F 0 "U?" V 6083 2950 50  0000 C CNN
-F 1 "BME280" V 6174 2950 50  0000 C CNN
+F 1 "BME280 Inside" V 6174 2950 50  0000 C CNN
 F 2 "Package_LGA:Bosch_LGA-8_2.5x2.5mm_P0.65mm_ClockwisePinNumbering" H 8150 2500 50  0001 C CNN
 F 3 "https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BME280-DS002.pdf" H 6650 2750 50  0001 C CNN
 	1    6650 2950
@@ -172,4 +172,100 @@ Wire Wire Line
 Connection ~ 5000 5000
 Wire Wire Line
 	5000 5000 4400 5000
+$Comp
+L power:+12V #PWR?
+U 1 1 6143626A
+P 10000 1000
+F 0 "#PWR?" H 10000 850 50  0001 C CNN
+F 1 "+12V" V 10015 1128 50  0000 L CNN
+F 2 "" H 10000 1000 50  0001 C CNN
+F 3 "" H 10000 1000 50  0001 C CNN
+	1    10000 1000
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Transistor_FET:IRF9540N Q?
+U 1 1 614399A7
+P 9350 1500
+F 0 "Q?" H 9554 1546 50  0000 L CNN
+F 1 "IRF9540N" H 9554 1455 50  0000 L CNN
+F 2 "Package_TO_SOT_THT:TO-220-3_Vertical" H 9550 1425 50  0001 L CIN
+F 3 "http://www.irf.com/product-info/datasheets/data/irf9540n.pdf" H 9350 1500 50  0001 L CNN
+	1    9350 1500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9450 1300 9450 1000
+Wire Wire Line
+	9450 1000 10000 1000
+$Comp
+L Device:R R?
+U 1 1 6145DE03
+P 8500 1200
+F 0 "R?" H 8570 1246 50  0000 L CNN
+F 1 "3K9" H 8570 1155 50  0000 L CNN
+F 2 "" V 8430 1200 50  0001 C CNN
+F 3 "~" H 8500 1200 50  0001 C CNN
+	1    8500 1200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9450 1000 9000 1000
+Wire Wire Line
+	8500 1000 8500 1050
+Connection ~ 9450 1000
+$Comp
+L Device:C C?
+U 1 1 614616AE
+P 9000 1200
+F 0 "C?" H 9115 1246 50  0000 L CNN
+F 1 "100NF" H 9115 1155 50  0000 L CNN
+F 2 "" H 9038 1050 50  0001 C CNN
+F 3 "~" H 9000 1200 50  0001 C CNN
+	1    9000 1200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9000 1050 9000 1000
+Connection ~ 9000 1000
+Wire Wire Line
+	9000 1000 8500 1000
+Wire Wire Line
+	8500 1350 8500 1500
+Wire Wire Line
+	8500 1500 9000 1500
+Wire Wire Line
+	9000 1350 9000 1500
+Connection ~ 9000 1500
+Wire Wire Line
+	9000 1500 9150 1500
+$Comp
+L Device:R R?
+U 1 1 61465070
+P 8500 1700
+F 0 "R?" H 8570 1746 50  0000 L CNN
+F 1 "1K1" H 8570 1655 50  0000 L CNN
+F 2 "" V 8430 1700 50  0001 C CNN
+F 3 "~" H 8500 1700 50  0001 C CNN
+	1    8500 1700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8500 1550 8500 1500
+Connection ~ 8500 1500
+$Comp
+L Transistor_BJT:2N2646 Q?
+U 1 1 61467779
+P 7900 2250
+F 0 "Q?" H 8090 2296 50  0000 L CNN
+F 1 "2N2646" H 8090 2205 50  0000 L CNN
+F 2 "Package_TO_SOT_THT:TO-18-3" H 8100 2175 50  0001 L CIN
+F 3 "http://www.bucek.name/pdf/2n2646,2647.pdf" H 7900 2250 50  0001 L CNN
+	1    7900 2250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8500 1850 8500 2050
+Wire Wire Line
+	8500 2050 8000 2050
 $EndSCHEMATC
