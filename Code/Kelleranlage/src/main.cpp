@@ -15,21 +15,18 @@
 #define OLED_RESET -1
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64 
-#define FAN_Pin D7
+#define FAN_Pin D3
+#define FAN_Pin2 D4
+#define Button_Pin D5 
 #define PWM_frequenz 25000
 #define PWM_max 1023
-#define Esp32_Name "Kelleranlage"
-#define Wifi_Name "OHS56"
-#define Wifi_password "ks$djAz7830nFbsf42ld91kdjsaGMs"
-#define MQTT_Broker "192.168.178.23"
-#define Esp32_password "F238(GHJSAN§$klm124nKJN4m,.321"
-const char* indexhtml = "<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Konfiguration</title> <style>*,::after,::before{box-sizing:border-box;}body{margin:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans','Liberation Sans';font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#f5f5f5;}.form-control{display:block;width:100%;height:calc(1.5em + .75rem + 2px);border:1px solid #ced4da;}button{cursor: pointer;border:1px solid transparent;color:#fff;background-color:#007bff;border-color:#007bff;padding:.5rem 1rem;font-size:1.25rem;line-height:1.5;border-radius:.3rem;width:100%}.form-signin{width:100%;max-width:400px;padding:15px;margin:auto;}h1{text-align: center}</style> </head> <body><form action='/' method='post'><h1 class=''>Konfiguration</h1><br /><div class='form-floating'><br /><label>Name der Anlage</label><input class='form-control' name='SSID-AP' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>Passwort AP</label><input class='form-control' name='Passwort-AP' type='password' maxlength='30'/></div><br /><div class='form-floating'><label>SSID Wlan</label><input class='form-control' name='SSID-Wlan' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>Passwort Wlan</label><input class='form-control' name='Passwort-Wlan' type='password' maxlength='30'/></div><div class='form-floating'><br /><label>Toplevel Topic</label><input class='form-control' name='Topic' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>MQTT Server IP</label><input class='form-control' name='MQTT-IP' type='text' maxlength='15'/></div><div class='form-floating'><br /><label>MQTT Server Port</label><input class='form-control' name='MQTT-Port' type='number' min='100' max='30000'/></div><div class='form-floating'><br /><label>Zielfeuchte in %</label><input class='form-control' name='Zielfeuchte' type='number' min='50' max='85'/></div><div class='form-floating'><br /><br /><br /><button type='submit'>Speichern</button></form></body></html> ";
+const char* indexhtml = "<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Konfiguration</title> <style>*,::after,::before{box-sizing:border-box;}body{margin:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans','Liberation Sans';font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#f5f5f5;}.form-control{display:block;width:100%;height:calc(1.5em + .75rem + 2px);border:1px solid #ced4da;}button{cursor: pointer;border:1px solid transparent;color:#fff;background-color:#007bff;border-color:#007bff;padding:.5rem 1rem;font-size:1.25rem;line-height:1.5;border-radius:.3rem;width:100%}.form-signin{width:100%;max-width:400px;padding:15px;margin:auto;}h1{text-align: center}</style> </head> <body><form action='/' method='post'><h1 class=''>Konfiguration</h1><br /><div class='form-floating'><br /><label>Name der Anlage</label><input class='form-control' name='SSID-AP' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>Passwort AP</label><input class='form-control' name='Passwort-AP' type='password' maxlength='40'/></div><br /><div class='form-floating'><label>SSID Wlan</label><input class='form-control' name='SSID-Wlan' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>Passwort Wlan</label><input class='form-control' name='Passwort-Wlan' type='password' maxlength='40'/></div><div class='form-floating'><br /><label>Toplevel Topic</label><input class='form-control' name='Topic' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>MQTT Server IP</label><input class='form-control' name='MQTT-IP' type='text' maxlength='15'/></div><div class='form-floating'><br /><label>MQTT Server Port</label><input class='form-control' name='MQTT-Port' type='number' min='100' max='30000'/></div><div class='form-floating'><br /><label>Zielfeuchte in %</label><input class='form-control' name='Zielfeuchte' type='number' min='50' max='85'/></div><div class='form-floating'><br /><br /><br /><button type='submit'>Speichern</button></form></body></html> ";
 struct configuration 
 {
     char Wifi_name[26];
-    char Wifi_passwort[31];
+    char Wifi_passwort[41];
     char Esp32_name[26];
-    char Esp32_passwort[31];
+    char Esp32_passwort[41];
     char toplevel_topic[26];
     char MQTT_IP[16];
     char MQTT_Port[6];
@@ -99,8 +96,9 @@ Display.println(buf);
 //*****************************************************************************************************************
 void WiFi_connect()
 {
-while(WiFi.isConnected() == false && WiFi.status() != WL_NO_SSID_AVAIL && WiFi.status() != WL_CONNECT_FAILED && WiFi.status() != WL_WRONG_PASSWORD)
+while(WiFi.status() == WL_DISCONNECTED)
 {
+delay(500);
 Display.clearDisplay();
 Display.setCursor(0,0);
 center("verbinden.");
@@ -115,7 +113,6 @@ Display.clearDisplay();
 Display.setCursor(0,0);
 center("verbinden...");
 Display.display();
-delay(500);
 }
 if(WiFi.status() != WL_CONNECTED)
 {
@@ -133,6 +130,29 @@ ArduinoOTA.begin();
 }
 }
 //*****************************************************************************************************************
+void saveineeprom()
+{
+config_esp8266.Wifi_name[25] = config_esp8266.Wifi_passwort[40] =config_esp8266.Esp32_name[25] =config_esp8266.Esp32_passwort[40] =config_esp8266.toplevel_topic[25] =config_esp8266.MQTT_IP[15] =config_esp8266.MQTT_Port[5] =config_esp8266.Zielfeuchte[2] = 0;
+EEPROM.put(0, config_esp8266);
+EEPROM.commit();
+}
+//*****************************************************************************************************************
+void configreset(uint8_t State)
+{
+if(State == HIGH){
+strncpy(config_esp8266.Esp32_name, "NodeMCU 0.9", sizeof(config_esp8266.Esp32_name));
+strncpy(config_esp8266.Esp32_passwort, "Password123", sizeof(config_esp8266.Esp32_passwort));
+strncpy(config_esp8266.Wifi_name, "Test", sizeof(config_esp8266.Wifi_name));
+strncpy(config_esp8266.Wifi_passwort, "Test", sizeof(config_esp8266.Wifi_passwort));
+strncpy(config_esp8266.MQTT_IP, "192.168.178.23", sizeof(config_esp8266.MQTT_IP));
+strncpy(config_esp8266.MQTT_Port, "1883", sizeof(config_esp8266.MQTT_Port));
+strncpy(config_esp8266.toplevel_topic, "home", sizeof(config_esp8266.toplevel_topic));
+strncpy(config_esp8266.Zielfeuchte, "55", sizeof(config_esp8266.Zielfeuchte));
+saveineeprom();
+ESP.restart();
+}
+}
+//*****************************************************************************************************************
 void config()
 {
 if(server.method() == HTTP_POST)
@@ -145,9 +165,7 @@ if(server.arg("Topic") != ""){strncpy(config_esp8266.toplevel_topic, server.arg(
 if(server.arg("MQTT-IP") != ""){strncpy(config_esp8266.MQTT_IP, server.arg("MQTT-IP").c_str(), sizeof(config_esp8266.MQTT_IP));}
 if(server.arg("MQTT-Port") != ""){strncpy(config_esp8266.MQTT_Port, server.arg("MQTT-Port").c_str(), sizeof(config_esp8266.MQTT_Port));}
 if(server.arg("Zielfeuchte") != ""){strncpy(config_esp8266.Zielfeuchte, server.arg("Zielfeuchte").c_str(), sizeof(config_esp8266.Zielfeuchte));}
-config_esp8266.Wifi_name[25] = config_esp8266.Wifi_passwort[30] =config_esp8266.Esp32_name[25] =config_esp8266.Esp32_passwort[30] =config_esp8266.toplevel_topic[25] =config_esp8266.MQTT_IP[15] =config_esp8266.MQTT_Port[5] =config_esp8266.Zielfeuchte[2] = 0;
-EEPROM.put(0, config_esp8266);
-EEPROM.commit();
+saveineeprom();
 server.send(200, "text/html", "<html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Konfiguration beendet!</title> </head><body><p style='text-align: center;'><strong>Die Anlage wurde erfolgreich konfiguriert!</strong></p><p style='text-align: center;'>Neustart in 5s.</p> </body>");
 delay(5000);
 ESP.restart();
@@ -224,6 +242,13 @@ Werte("Auslastung:",speed," %");
 Display.display();
 }
 //*****************************************************************************************************************
+void wifi()
+{
+if(!WiFi.isConnected() && WiFi.getMode() == WIFI_STA){
+WiFi.softAP(config_esp8266.Esp32_name, config_esp8266.Esp32_passwort, 1, 0, 3);
+}
+}
+//*****************************************************************************************************************
 /*+++++++++++++++++++++++++++++++++++++++++++++++++++
 setup
 +++++++++++++++++++++++++++++++++++++++++++++++++++*/
@@ -243,6 +268,7 @@ Serial.println(config_esp8266.Zielfeuchte);
 Wire.begin();
 SelectBUS(0);
 Display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+Display.clearDisplay();
 Display.setTextColor(WHITE);
 Display.setTextSize(1);
 SelectBUS(1);
@@ -251,10 +277,11 @@ SelectBUS(2);
 bmpaußen.begin(BME280_ADDRESS_ALTERNATE,&Wire);
 SelectBUS(0);
 pinMode(FAN_Pin, OUTPUT);
+pinMode(FAN_Pin2, OUTPUT);
+pinMode(Button_Pin, INPUT);
 analogWriteFreq(PWM_frequenz);
 analogWrite(FAN_Pin, PWM_max/2);
-WiFi.softAP(config_esp8266.Esp32_name, config_esp8266.Esp32_passwort, 1, 0, 2);
-WiFi.enableAP(false);
+analogWrite(FAN_Pin2, PWM_max/2);
 WiFi.begin(config_esp8266.Wifi_name, config_esp8266.Wifi_passwort);
 WiFi.hostname(config_esp8266.Esp32_name);
 WiFi_connect();
@@ -272,20 +299,15 @@ SelectBUS(2);
 float tou = bmpaußen.readTemperature();
 float fou = bmpaußen.readHumidity();
 SelectBUS(0);
-if(WiFi.isConnected() == false)
-{
-WiFi.enableAP(true);
-}else
-{
-    WiFi.enableAP(false);
-    if(mqttclient.connected() == false)
+ if(mqttclient.connected() == false)
     {
         mqttclient.connect(config_esp8266.Esp32_name);
     }
-}
+wifi();
 mqttclient.loop();
 refresh(tin,fin,tou,fou,taupunkt(tin,fin),Lüfter(tin,tou,round(fin),round(fou)),bmpinnen.readPressure()/100.0f,bmpaußen.readPressure()/100.0f);
 server.handleClient();
 ArduinoOTA.handle();
+configreset(digitalRead(Button_Pin));
 delay(1000);
 }

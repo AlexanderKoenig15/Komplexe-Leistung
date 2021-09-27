@@ -71,7 +71,7 @@ Wire Wire Line
 	3900 4750 5000 4750
 Connection ~ 5000 4750
 Wire Wire Line
-	5000 4750 5000 5000
+	5000 4750 5000 4850
 Wire Wire Line
 	6550 3550 6550 3700
 Wire Wire Line
@@ -310,10 +310,6 @@ Wire Wire Line
 	5800 4250 5800 5700
 Wire Wire Line
 	5800 5700 5600 5700
-Wire Wire Line
-	5600 5900 7350 5900
-Wire Wire Line
-	7350 5900 7350 2250
 Connection ~ 7350 2250
 Wire Wire Line
 	7350 2250 7700 2250
@@ -339,7 +335,7 @@ F 3 "" H 10000 1100 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	10000 6500 6050 6500
+	10000 6500 6550 6500
 Connection ~ 6050 6500
 Wire Wire Line
 	10000 1100 10000 1250
@@ -403,4 +399,49 @@ Wire Wire Line
 Connection ~ 10300 1150
 Wire Wire Line
 	10300 1150 10100 1150
+Wire Wire Line
+	7350 2250 7350 5200
+Wire Wire Line
+	5600 5200 7350 5200
+$Comp
+L Switch:SW_Push SW?
+U 1 1 614D18A9
+P 7400 6000
+F 0 "SW?" H 7400 6285 50  0000 C CNN
+F 1 "SW_Push" H 7400 6194 50  0000 C CNN
+F 2 "" H 7400 6200 50  0001 C CNN
+F 3 "~" H 7400 6200 50  0001 C CNN
+	1    7400 6000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5600 6000 6550 6000
+Wire Wire Line
+	5000 4850 7600 4850
+Wire Wire Line
+	7600 4850 7600 6000
+Connection ~ 5000 4850
+Wire Wire Line
+	5000 4850 5000 5000
+$Comp
+L Device:R R?
+U 1 1 614DA686
+P 6550 6200
+F 0 "R?" H 6620 6246 50  0000 L CNN
+F 1 "4K7" H 6620 6155 50  0000 L CNN
+F 2 "" V 6480 6200 50  0001 C CNN
+F 3 "~" H 6550 6200 50  0001 C CNN
+	1    6550 6200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6550 6050 6550 6000
+Connection ~ 6550 6000
+Wire Wire Line
+	6550 6000 7200 6000
+Wire Wire Line
+	6550 6350 6550 6500
+Connection ~ 6550 6500
+Wire Wire Line
+	6550 6500 6050 6500
 $EndSCHEMATC
