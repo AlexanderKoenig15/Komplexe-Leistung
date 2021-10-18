@@ -15,9 +15,10 @@
 #define OLED_RESET -1
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64 
-#define FAN_Pin D3
-#define FAN_Pin2 D4
-#define Button_Pin D5 
+#define FAN_Pin D5
+#define FAN_Pin2 D6
+#define FAN_Pin3 D7
+#define Button_Pin D8 
 #define PWM_frequenz 25000
 #define PWM_max 1023
 const char* indexhtml = "<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Konfiguration</title> <style>*,::after,::before{box-sizing:border-box;}body{margin:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans','Liberation Sans';font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#f5f5f5;}.form-control{display:block;width:100%;height:calc(1.5em + .75rem + 2px);border:1px solid #ced4da;}button{cursor: pointer;border:1px solid transparent;color:#fff;background-color:#007bff;border-color:#007bff;padding:.5rem 1rem;font-size:1.25rem;line-height:1.5;border-radius:.3rem;width:100%}.form-signin{width:100%;max-width:400px;padding:15px;margin:auto;}h1{text-align: center}</style> </head> <body><form action='/' method='post'><h1 class=''>Konfiguration</h1><br /><div class='form-floating'><br /><label>Name der Anlage</label><input class='form-control' name='SSID-AP' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>Passwort AP</label><input class='form-control' name='Passwort-AP' type='password' maxlength='40'/></div><br /><div class='form-floating'><label>SSID Wlan</label><input class='form-control' name='SSID-Wlan' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>Passwort Wlan</label><input class='form-control' name='Passwort-Wlan' type='password' maxlength='40'/></div><div class='form-floating'><br /><label>Toplevel Topic</label><input class='form-control' name='Topic' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>MQTT Server IP</label><input class='form-control' name='MQTT-IP' type='text' maxlength='15'/></div><div class='form-floating'><br /><label>MQTT Server Port</label><input class='form-control' name='MQTT-Port' type='number' min='100' max='30000'/></div><div class='form-floating'><br /><label>Zielfeuchte in %</label><input class='form-control' name='Zielfeuchte' type='number' min='50' max='85'/></div><div class='form-floating'><br /><br /><br /><button type='submit'>Speichern</button></form></body></html> ";
@@ -139,7 +140,7 @@ EEPROM.commit();
 //*****************************************************************************************************************
 void configreset(uint8_t State)
 {
-if(State == HIGH){
+if(State == LOW){
 strncpy(config_esp8266.Esp32_name, "NodeMCU 0.9", sizeof(config_esp8266.Esp32_name));
 strncpy(config_esp8266.Esp32_passwort, "Password123", sizeof(config_esp8266.Esp32_passwort));
 strncpy(config_esp8266.Wifi_name, "Test", sizeof(config_esp8266.Wifi_name));
@@ -266,7 +267,6 @@ Serial.println(config_esp8266.MQTT_IP);
 Serial.println(config_esp8266.MQTT_Port);
 Serial.println(config_esp8266.Zielfeuchte);
 Wire.begin();
-SelectBUS(0);
 Display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 Display.clearDisplay();
 Display.setTextColor(WHITE);
@@ -275,7 +275,6 @@ SelectBUS(1);
 bmpinnen.begin(BME280_ADDRESS_ALTERNATE, &Wire);
 SelectBUS(2);
 bmpaußen.begin(BME280_ADDRESS_ALTERNATE,&Wire);
-SelectBUS(0);
 pinMode(FAN_Pin, OUTPUT);
 pinMode(FAN_Pin2, OUTPUT);
 pinMode(Button_Pin, INPUT);
@@ -298,7 +297,6 @@ float fin = bmpinnen.readHumidity();
 SelectBUS(2);
 float tou = bmpaußen.readTemperature();
 float fou = bmpaußen.readHumidity();
-SelectBUS(0);
  if(mqttclient.connected() == false)
     {
         mqttclient.connect(config_esp8266.Esp32_name);
