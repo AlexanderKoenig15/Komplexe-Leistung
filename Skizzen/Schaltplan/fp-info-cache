@@ -1,4 +1,4 @@
-19235682710206154
+19237317369325415
 Battery
 BatteryHolder_Bulgin_BX0036_1xC
 Bulgin Battery Holder, BX0036, Battery Type C (https://www.bulgin.com/products/pub/media/bulgin/data/Battery_holders.pdf)
@@ -55180,6 +55180,13 @@ solder jumper open
 0
 5
 3
+KL
+Buchse
+
+
+0
+2
+2
 KL
 TCA9548A
 

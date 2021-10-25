@@ -87,7 +87,7 @@ U 1 1 61657007
 P 15050 1550
 F 0 "J7" H 14820 1592 50  0000 R CNN
 F 1 "12V DC, 2A" H 14820 1501 50  0000 R CNN
-F 2 "Jumper:SolderJumper-3_P1.3mm_Bridged12_Pad1.0x1.5mm" H 15100 1510 50  0001 C CNN
+F 2 "KL:Buchse" H 15100 1510 50  0001 C CNN
 F 3 "~" H 15100 1510 50  0001 C CNN
 	1    15050 1550
 	-1   0    0    -1  
@@ -240,13 +240,6 @@ Wire Wire Line
 	12650 6450 12650 6600
 Wire Wire Line
 	12650 8250 12650 8450
-Wire Wire Line
-	14150 650  14150 1450
-Wire Wire Line
-	13950 1450 14150 1450
-Wire Wire Line
-	14150 1450 14350 1450
-Connection ~ 14150 1450
 Wire Wire Line
 	11850 5950 12300 5950
 Wire Wire Line
@@ -565,8 +558,6 @@ F 3 "" H 8750 2450 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	9950 650  10500 650 
-Wire Wire Line
 	15150 2050 13850 2050
 Wire Wire Line
 	13850 2050 13850 2200
@@ -781,12 +772,6 @@ Wire Wire Line
 	8400 3950 8400 4450
 Wire Wire Line
 	8400 4450 9300 4450
-Wire Wire Line
-	9950 2950 10500 2950
-Connection ~ 9950 2950
-Connection ~ 10500 650 
-Wire Wire Line
-	10500 650  14150 650 
 $Comp
 L Transistor_FET:IRF9540N Q12
 U 1 1 61AA5F24
@@ -955,8 +940,6 @@ Wire Wire Line
 	9950 4650 10500 4650
 Connection ~ 9950 4650
 Wire Wire Line
-	10500 650  10500 4650
-Wire Wire Line
 	11400 4550 11400 3850
 Wire Wire Line
 	11400 3850 14850 3850
@@ -1065,11 +1048,6 @@ Wire Wire Line
 	3900 2950 3000 2950
 Wire Wire Line
 	3000 2950 3000 1000
-Wire Wire Line
-	3000 1000 12900 1000
-Wire Wire Line
-	12900 1000 12900 1450
-Connection ~ 12900 1450
 Wire Wire Line
 	6200 2950 6200 4650
 Wire Wire Line
@@ -1479,4 +1457,29 @@ Wire Notes Line
 	5550 9750 5550 10950
 Wire Notes Line
 	6150 9750 6150 10950
+Connection ~ 12900 1450
+Connection ~ 14150 1450
+Wire Wire Line
+	14150 1450 14350 1450
+Wire Wire Line
+	13950 1450 14150 1450
+Wire Wire Line
+	12900 1000 12900 1450
+Wire Wire Line
+	3000 1000 12900 1000
+Wire Wire Line
+	10500 650  10500 2950
+Wire Wire Line
+	10500 650  14150 650 
+Connection ~ 10500 650 
+Wire Wire Line
+	9950 650  10500 650 
+Wire Wire Line
+	14150 650  14150 1450
+Wire Wire Line
+	9950 2950 10500 2950
+Connection ~ 9950 2950
+Connection ~ 10500 2950
+Wire Wire Line
+	10500 2950 10500 4650
 $EndSCHEMATC
