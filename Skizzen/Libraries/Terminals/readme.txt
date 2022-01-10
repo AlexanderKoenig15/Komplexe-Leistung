@@ -1,0 +1,2 @@
+https://www.phoenixcontact.com/online/portal/de?uri=pxc-oc-itemdetail:pid=1791826&library=dede&tab=1#drawings
+https://www.digikey.de/de/products/detail/phoenix-contact/1791826/267499?s=N4IgTCBcDaIGJwNIBEDKB6AEgWjAGgFYAWEAXQF8g

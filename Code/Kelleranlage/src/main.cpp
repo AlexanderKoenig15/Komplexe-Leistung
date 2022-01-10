@@ -42,7 +42,7 @@ ESP8266WebServer server(80);
 Adafruit_SSD1306 Display(SCREEN_WIDTH,SCREEN_HEIGHT,&Wire,OLED_RESET);
 Adafruit_BME280 bmpinnen;
 Adafruit_BME280 bmpaußen;
-int Zähler_mqtt = 0;
+int z_mqtt = 0;
 unsigned char WiFi_logo[]
 {
 0b01111110,
@@ -193,7 +193,7 @@ float taupunkt(float temp, float humid)
     return tau;
 }
 //*****************************************************************************************************************
-uint8_t Lüfter(float tin, float tou,float relin, float relou)
+uint8_t Fan(float tin, float tou,float relin, float relou)
 {
     uint8_t speed;
     float ain=(4.75081*pow(1.06468,tin))*(relin/100);
@@ -222,9 +222,9 @@ if(WiFi.status() == WL_CONNECTED){
 Display.drawBitmap(0,0, WiFi_logo,8,8,WHITE);
 if(mqttclient.connected()){
 Display.drawBitmap(SCREEN_WIDTH -8,0, MQTT_logo,8,8,WHITE);
-if(Zähler_mqtt == 30)
+if(z_mqtt == 30)
 {
-Zähler_mqtt = 0;
+z_mqtt = 0;
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/InPressure")).c_str(),String(presin).c_str());
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/OutPressure")).c_str(),String(presout).c_str());
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/Fan2Pwm")).c_str(),String(speed).c_str());
@@ -234,7 +234,7 @@ mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std:
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/OutTemp")).c_str(),String(tout).c_str());
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/InTemp")).c_str(),String(tin).c_str());
 }
-Zähler_mqtt++;
+z_mqtt++;
 }
 }else{
 Display.drawBitmap(0,0, NoWiFi_logo,8,8,WHITE);
@@ -320,7 +320,7 @@ float fou = bmpaußen.readHumidity();
     }
 wifi();
 mqttclient.loop();
-refresh(tin,fin,tou,fou,taupunkt(tin,fin),Lüfter(tin,tou,round(fin),round(fou)),bmpinnen.readPressure()/100.0f,bmpaußen.readPressure()/100.0f);
+refresh(tin,fin,tou,fou,taupunkt(tin,fin),Fan(tin,tou,round(fin),round(fou)),bmpinnen.readPressure()/100.0f,bmpaußen.readPressure()/100.0f);
 server.handleClient();
 ArduinoOTA.handle();
 configreset(digitalRead(Button_Pin));

@@ -1,0 +1,7 @@
+(fp_lib_table
+  (lib (name Terminals)(type KiCad)(uri ${KIPRJMOD}/../Libraries/Terminals/Terminals.pretty)(options "")(descr ""))
+  (lib (name ESP8266)(type KiCad)(uri ${KIPRJMOD}/../Libraries/kicad-ESP8266/ESP8266.pretty)(options "")(descr ""))
+  (lib (name LM2596Module)(type KiCad)(uri ${KIPRJMOD}/../Libraries/LM2596Module)(options "")(descr ""))
+  (lib (name KL)(type KiCad)(uri ${KIPRJMOD}/../Libraries/KL.pretty)(options "")(descr ""))
+  (lib (name Oled-Display)(type KiCad)(uri ${KIPRJMOD}/../Libraries/Oled-Display/Oled-Display.pretty)(options "")(descr ""))
+)
