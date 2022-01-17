@@ -12,10 +12,11 @@
 #include <EEPROM.h>
 #include <iostream>
 #include <ArduinoOTA.h>
+#include <M2M_LM75A.h>
 #define OLED_RESET -1
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64 
-//#define Eepromneu //needs to be defined for the first time so EEprom can read something
+#define Bus_notused 1
 uint8_t FAN_Pin = D5;
 uint8_t FAN_Pin2 = D6;
 uint8_t FAN_Pin3 = D8;
@@ -37,6 +38,7 @@ struct configuration
     char Zielfeuchte[3];
 } config_esp8266 = {};
 WiFiClient nodemcu;
+M2M_LM75A walltemp;
 PubSubClient mqttclient(nodemcu);
 ESP8266WebServer server(80);
 Adafruit_SSD1306 Display(SCREEN_WIDTH,SCREEN_HEIGHT,&Wire,OLED_RESET);
@@ -129,7 +131,8 @@ delay(2500);
 }else{
 mqttclient.setServer(config_esp8266.MQTT_IP,  std::stoi(config_esp8266.MQTT_Port));
 mqttclient.connect(config_esp8266.Esp32_name);
-ArduinoOTA.begin(false);
+ArduinoOTA.begin();
+ArduinoOTA.setHostname(config_esp8266.Esp32_name);
 }
 }
 //*****************************************************************************************************************
@@ -193,28 +196,33 @@ float taupunkt(float temp, float humid)
     return tau;
 }
 //*****************************************************************************************************************
-uint8_t Fan(float tin, float tou,float relin, float relou)
+uint8_t Fan(float tin, float tou,float relin, float relou, float wtemp)
 {
-    uint8_t speed;
+    uint8_t speed = 0;
     float ain=(4.75081*pow(1.06468,tin))*(relin/100);
     float aou=(4.75081*pow(1.06468,tou))*(relou/100);
-    speed = (ain-aou) > 1.0f;
-    if(relin < std::stoi(config_esp8266.Zielfeuchte))
+    if(relin > std::stoi(config_esp8266.Zielfeuchte) || tou >= 5)
     {
-      speed = 0;
+    speed = (ain-aou) > 1.0f;
+    }
+   if((wtemp + 1.5f ) < taupunkt(tin,relin))
+    {
+digitalWrite(ExtPowerOutPin, HIGH);
+speed = 0;
     }
     analogWrite(FAN_Pin, speed*PWM_max);
     analogWrite(FAN_Pin2, speed*PWM_max);
     analogWrite(FAN_Pin3, speed*PWM_max);
     return speed*100;
 }
+////////////////////////////////////////////////////////////////////////////////////////////
 void checkforeeprom()
 {
 if(std::string(config_esp8266.Esp32_name) == "" || std::string(config_esp8266.Wifi_name) == "" || std::string(config_esp8266.Wifi_passwort) == "")
 configreset(false);    
 }
 //*****************************************************************************************************************
-void refresh(float tin, float fin,float tout ,float fout,float taup,uint8_t speed, float presin, float presout)
+void refresh(float tin, float fin,float tout ,float fout,float taup,uint8_t speed, float presin, float presout, float wt)
 {
 Display.clearDisplay();
 Display.setCursor(0,0);
@@ -233,6 +241,7 @@ mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std:
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/InHumidity")).c_str(),String(fin).c_str());
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/OutTemp")).c_str(),String(tout).c_str());
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/InTemp")).c_str(),String(tin).c_str());
+mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/GroundTemp")).c_str(),String(wt).c_str());
 }
 z_mqtt++;
 }
@@ -248,7 +257,7 @@ Werte("Temp Ausen:",tout," C");
 Werte("Luft Innen:",fin," %");
 Werte("Luft Ausen:",fout," %");
 Werte("Taup Innen:",taup," C");
-Werte("Auslastung:",speed," %");
+Werte("Fan  Speed:",speed," %");
 Display.display();
 }
 //*****************************************************************************************************************
@@ -290,6 +299,9 @@ SelectBUS(3);
 bmpinnen.begin(BME280_ADDRESS_ALTERNATE, &Wire);
 SelectBUS(2);
 bmpaußen.begin(BME280_ADDRESS_ALTERNATE,&Wire);
+SelectBUS(4);
+walltemp.begin();
+SelectBUS(Bus_notused);
 pinMode(FAN_Pin, OUTPUT);
 pinMode(FAN_Pin2, OUTPUT);
 pinMode(FAN_Pin3, OUTPUT);
@@ -308,21 +320,24 @@ server.begin();
 loop
 +++++++++++++++++++++++++++++++++++++++++++++++++++*/
 void loop() {
+ArduinoOTA.handle();
 SelectBUS(3);
 float tin = bmpinnen.readTemperature();
 float fin = bmpinnen.readHumidity();
 SelectBUS(2);
 float tou = bmpaußen.readTemperature();
 float fou = bmpaußen.readHumidity();
+SelectBUS(4);
+float wt = walltemp.getTemperature();
+SelectBUS(Bus_notused);
  if(mqttclient.connected() == false)
     {
         mqttclient.connect(config_esp8266.Esp32_name);
     }
 wifi();
 mqttclient.loop();
-refresh(tin,fin,tou,fou,taupunkt(tin,fin),Fan(tin,tou,round(fin),round(fou)),bmpinnen.readPressure()/100.0f,bmpaußen.readPressure()/100.0f);
+refresh(tin,fin,tou,fou,taupunkt(tin,fin),Fan(tin,tou,round(fin),round(fou), wt),bmpinnen.readPressure()/100.0f,bmpaußen.readPressure()/100.0f, wt);
 server.handleClient();
-ArduinoOTA.handle();
 configreset(digitalRead(Button_Pin));
 delay(1000);
 }
