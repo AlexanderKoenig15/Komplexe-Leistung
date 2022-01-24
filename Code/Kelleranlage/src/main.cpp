@@ -17,12 +17,15 @@
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64 
 #define Bus_notused 1
+#define LM75Offset -3.0f
+#define clockspeed 10000
 uint8_t FAN_Pin = D5;
 uint8_t FAN_Pin2 = D6;
 uint8_t FAN_Pin3 = D8;
 uint8_t Button_Pin = D7;
 uint8_t ExtPowerOutPin = 10;
 uint8_t CirculationPumpPin = D3;
+float wandbackup = 0;
 #define PWM_frequenz 25000
 #define PWM_max 1023
 const char* indexhtml = "<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Konfiguration</title> <style>*,::after,::before{box-sizing:border-box;}body{margin:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans','Liberation Sans';font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#f5f5f5;}.form-control{display:block;width:100%;height:calc(1.5em + .75rem + 2px);border:1px solid #ced4da;}button{cursor: pointer;border:1px solid transparent;color:#fff;background-color:#007bff;border-color:#007bff;padding:.5rem 1rem;font-size:1.25rem;line-height:1.5;border-radius:.3rem;width:100%}.form-signin{width:100%;max-width:400px;padding:15px;margin:auto;}h1{text-align: center}</style> </head> <body><form action='/' method='post'><h1 class=''>Konfiguration</h1><br /><div class='form-floating'><br /><label>Name der Anlage</label><input class='form-control' name='SSID-AP' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>Passwort AP</label><input class='form-control' name='Passwort-AP' type='password' maxlength='40'/></div><br /><div class='form-floating'><label>SSID Wlan</label><input class='form-control' name='SSID-Wlan' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>Passwort Wlan</label><input class='form-control' name='Passwort-Wlan' type='password' maxlength='40'/></div><div class='form-floating'><br /><label>Toplevel Topic</label><input class='form-control' name='Topic' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>MQTT Server IP</label><input class='form-control' name='MQTT-IP' type='text' maxlength='15'/></div><div class='form-floating'><br /><label>MQTT Server Port</label><input class='form-control' name='MQTT-Port' type='number' min='100' max='30000'/></div><div class='form-floating'><br /><label>Zielfeuchte in %</label><input class='form-control' name='Zielfeuchte' type='number' min='50' max='85'/></div><div class='form-floating'><br /><br /><br /><button type='submit'>Speichern</button></form></body></html> ";
@@ -196,24 +199,30 @@ float taupunkt(float temp, float humid)
     return tau;
 }
 //*****************************************************************************************************************
-uint8_t Fan(float tin, float tou,float relin, float relou, float wtemp)
+void Fan(float tin, float tou,float relin, float relou, float wtemp)
 {
     uint8_t speed = 0;
     float ain=(4.75081*pow(1.06468,tin))*(relin/100);
     float aou=(4.75081*pow(1.06468,tou))*(relou/100);
+    int statebefore = analogRead(FAN_Pin);
+    int feuchterstate = digitalRead(ExtPowerOutPin);
+    float tau = taupunkt(tin,relin);
+    int mode = LOW;
     if(relin > std::stoi(config_esp8266.Zielfeuchte) || tou >= 5)
     {
-    speed = (ain-aou) > 1.0f;
+        speed = (ain-aou) > 1.0f;
     }
-   if((wtemp + 1.5f ) < taupunkt(tin,relin))
+   if((wtemp + LM75Offset) <= tau ||( feuchterstate == HIGH && (wtemp + LM75Offset) < (tau + 2.5f)))
     {
-digitalWrite(ExtPowerOutPin, HIGH);
-speed = 0;
+        mode = HIGH;
+        speed = 0;
     }
+    if(statebefore == 0 && relin <= (std::stoi(config_esp8266.Zielfeuchte) + 5))
+        speed = 0;   
     analogWrite(FAN_Pin, speed*PWM_max);
     analogWrite(FAN_Pin2, speed*PWM_max);
     analogWrite(FAN_Pin3, speed*PWM_max);
-    return speed*100;
+    digitalWrite(ExtPowerOutPin, mode);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////
 void checkforeeprom()
@@ -222,10 +231,11 @@ if(std::string(config_esp8266.Esp32_name) == "" || std::string(config_esp8266.Wi
 configreset(false);    
 }
 //*****************************************************************************************************************
-void refresh(float tin, float fin,float tout ,float fout,float taup,uint8_t speed, float presin, float presout, float wt)
+void refresh(float tin, float fin,float tout ,float fout,float taup, float presin, float presout, float wt)
 {
 Display.clearDisplay();
 Display.setCursor(0,0);
+uint8_t speed = analogRead(FAN_Pin)/PWM_max*100;
 if(WiFi.status() == WL_CONNECTED){
 Display.drawBitmap(0,0, WiFi_logo,8,8,WHITE);
 if(mqttclient.connected()){
@@ -233,6 +243,7 @@ Display.drawBitmap(SCREEN_WIDTH -8,0, MQTT_logo,8,8,WHITE);
 if(z_mqtt == 30)
 {
 z_mqtt = 0;
+Fan(tin,tout,round(fin),round(fout), wt);
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/InPressure")).c_str(),String(presin).c_str());
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/OutPressure")).c_str(),String(presout).c_str());
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/Fan2Pwm")).c_str(),String(speed).c_str());
@@ -257,7 +268,8 @@ Werte("Temp Ausen:",tout," C");
 Werte("Luft Innen:",fin," %");
 Werte("Luft Ausen:",fout," %");
 Werte("Taup Innen:",taup," C");
-Werte("Fan  Speed:",speed," %");
+//Werte("Fan  Speed:",speed," %");
+Werte("Wandtemp  :",wt," C");
 Display.display();
 }
 //*****************************************************************************************************************
@@ -290,7 +302,7 @@ Serial.println(config_esp8266.MQTT_IP);
 Serial.println(config_esp8266.MQTT_Port);
 Serial.println(config_esp8266.Zielfeuchte);
 Wire.begin();
-Wire.setClock(10000);
+Wire.setClock(clockspeed);
 Display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 Display.clearDisplay();
 Display.setTextColor(WHITE);
@@ -307,14 +319,15 @@ pinMode(FAN_Pin2, OUTPUT);
 pinMode(FAN_Pin3, OUTPUT);
 pinMode(Button_Pin, INPUT);
 analogWriteFreq(PWM_frequenz);
-analogWrite(FAN_Pin, PWM_max/2);
-analogWrite(FAN_Pin2, PWM_max/2);
-analogWrite(FAN_Pin3, PWM_max/2);
+analogWrite(FAN_Pin, PWM_max);
+analogWrite(FAN_Pin2, PWM_max);
+analogWrite(FAN_Pin3, PWM_max);
 WiFi.begin(config_esp8266.Wifi_name, config_esp8266.Wifi_passwort);
 WiFi.hostname(config_esp8266.Esp32_name);
 WiFi_connect();
 server.on("/", config);
 server.begin();
+Wire.setClock(clockspeed);
 }
 /*+++++++++++++++++++++++++++++++++++++++++++++++++
 loop
@@ -329,6 +342,10 @@ float tou = bmpaußen.readTemperature();
 float fou = bmpaußen.readHumidity();
 SelectBUS(4);
 float wt = walltemp.getTemperature();
+if(wt == -1000.0f)
+    wt = wandbackup;
+else
+    wandbackup = wt;
 SelectBUS(Bus_notused);
  if(mqttclient.connected() == false)
     {
@@ -336,7 +353,7 @@ SelectBUS(Bus_notused);
     }
 wifi();
 mqttclient.loop();
-refresh(tin,fin,tou,fou,taupunkt(tin,fin),Fan(tin,tou,round(fin),round(fou), wt),bmpinnen.readPressure()/100.0f,bmpaußen.readPressure()/100.0f, wt);
+refresh(tin,fin,tou,fou,taupunkt(tin,fin),bmpinnen.readPressure()/100.0f,bmpaußen.readPressure()/100.0f, wt);
 server.handleClient();
 configreset(digitalRead(Button_Pin));
 delay(1000);
