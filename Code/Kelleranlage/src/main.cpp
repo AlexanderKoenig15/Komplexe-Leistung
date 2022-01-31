@@ -19,6 +19,11 @@
 #define Bus_notused 1
 #define LM75Offset -3.0f
 #define clockspeed 10000
+#define bmeinnen 3
+#define tempoff 35.0f
+#define bmeaußen 2
+#define lm75 4
+#define bitmapsize 8
 uint8_t FAN_Pin = D5;
 uint8_t FAN_Pin2 = D6;
 uint8_t FAN_Pin3 = D8;
@@ -28,7 +33,8 @@ uint8_t CirculationPumpPin = D3;
 float wandbackup = 0;
 #define PWM_frequenz 25000
 #define PWM_max 1023
-const char* indexhtml = "<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Konfiguration</title> <style>*,::after,::before{box-sizing:border-box;}body{margin:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans','Liberation Sans';font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#f5f5f5;}.form-control{display:block;width:100%;height:calc(1.5em + .75rem + 2px);border:1px solid #ced4da;}button{cursor: pointer;border:1px solid transparent;color:#fff;background-color:#007bff;border-color:#007bff;padding:.5rem 1rem;font-size:1.25rem;line-height:1.5;border-radius:.3rem;width:100%}.form-signin{width:100%;max-width:400px;padding:15px;margin:auto;}h1{text-align: center}</style> </head> <body><form action='/' method='post'><h1 class=''>Konfiguration</h1><br /><div class='form-floating'><br /><label>Name der Anlage</label><input class='form-control' name='SSID-AP' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>Passwort AP</label><input class='form-control' name='Passwort-AP' type='password' maxlength='40'/></div><br /><div class='form-floating'><label>SSID Wlan</label><input class='form-control' name='SSID-Wlan' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>Passwort Wlan</label><input class='form-control' name='Passwort-Wlan' type='password' maxlength='40'/></div><div class='form-floating'><br /><label>Toplevel Topic</label><input class='form-control' name='Topic' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>MQTT Server IP</label><input class='form-control' name='MQTT-IP' type='text' maxlength='15'/></div><div class='form-floating'><br /><label>MQTT Server Port</label><input class='form-control' name='MQTT-Port' type='number' min='100' max='30000'/></div><div class='form-floating'><br /><label>Zielfeuchte in %</label><input class='form-control' name='Zielfeuchte' type='number' min='50' max='85'/></div><div class='form-floating'><br /><br /><br /><button type='submit'>Speichern</button></form></body></html> ";
+const char* indexhtml = "<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Konfiguration</title> <style>*,::after,::before{box-sizing:border-box;}body{margin:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans','Liberation Sans';font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#f5f5f5;}.form-control{display:block;width:100%;height:calc(1.5em + .75rem + 2px);border:1px solid #ced4da;}button{cursor: pointer;border:1px solid transparent;color:#fff;background-color:#007bff;border-color:#007bff;padding:.5rem 1rem;font-size:1.25rem;line-height:1.5;border-radius:.3rem;width:100%}.form-signin{width:100%;max-width:400px;padding:15px;margin:auto;}h1{text-align: center}</style> </head> <body><form action='/' method='post'><h1>Konfiguration</h1><br /><div class='form-floating'><br /><label>Password</label><input class='form-control' name='Password-config' type='text' pattern='.{1,25}' required value = ''/></div><button type='submit' value ='Check'>weiter</button></form></body></html>";
+//original html = "<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Konfiguration</title> <style>*,::after,::before{box-sizing:border-box;}body{margin:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans','Liberation Sans';font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#f5f5f5;}.form-control{display:block;width:100%;height:calc(1.5em + .75rem + 2px);border:1px solid #ced4da;}button{cursor: pointer;border:1px solid transparent;color:#fff;background-color:#007bff;border-color:#007bff;padding:.5rem 1rem;font-size:1.25rem;line-height:1.5;border-radius:.3rem;width:100%}.form-signin{width:100%;max-width:400px;padding:15px;margin:auto;}h1{text-align: center}</style> </head> <body><form action='/' method='post'><h1 class=''>Konfiguration</h1><br /><div class='form-floating'><br /><label>Name der Anlage</label><input class='form-control' name='SSID-AP' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>Passwort AP</label><input class='form-control' name='Passwort-AP' type='password' maxlength='40'/></div><br /><div class='form-floating'><label>SSID Wlan</label><input class='form-control' name='SSID-Wlan' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>Passwort Wlan</label><input class='form-control' name='Passwort-Wlan' type='password' maxlength='40'/></div><div class='form-floating'><br /><label>Toplevel Topic</label><input class='form-control' name='Topic' type='text' maxlength='25'/></div><div class='form-floating'><br /><label>MQTT Server IP</label><input class='form-control' name='MQTT-IP' type='text' maxlength='15'/></div><div class='form-floating'><br /><label>MQTT Server Port</label><input class='form-control' name='MQTT-Port' type='number' min='100' max='30000'/></div><div class='form-floating'><br /><label>Zielfeuchte in %</label><input class='form-control' name='Zielfeuchte' type='number' min='50' max='85'/></div><div class='form-floating'><br /><br /><br /><button type='submit'>Speichern</button></form></body></html>"
 struct configuration 
 {
     char Wifi_name[26];
@@ -39,6 +45,7 @@ struct configuration
     char MQTT_IP[16];
     char MQTT_Port[6];
     char Zielfeuchte[3];
+    char mode[4];
 } config_esp8266 = {};
 WiFiClient nodemcu;
 M2M_LM75A walltemp;
@@ -48,16 +55,38 @@ Adafruit_SSD1306 Display(SCREEN_WIDTH,SCREEN_HEIGHT,&Wire,OLED_RESET);
 Adafruit_BME280 bmpinnen;
 Adafruit_BME280 bmpaußen;
 int z_mqtt = 0;
-unsigned char WiFi_logo[]
+unsigned char WiFi_good[]
 {
-0b01111110,
-0b10000001, 
+0b11100000, 
+0b00111000, 
+0b00001100, 
+0b11100110, 
+0b01110010, 
+0b00011011, 
+0b11011001, 
+0b11001001
+};
+unsigned char WiFi_middle[]
+{
 0b00000000, 
-0b00111100, 
-0b01000010, 
 0b00000000, 
+0b00000000, 
+0b11100000, 
+0b01110000, 
 0b00011000, 
-0b00100100
+0b11011000, 
+0b11001000
+};
+unsigned char WiFi_bad[]
+{
+0b00000000, 
+0b00000000, 
+0b00000000, 
+0b00000000, 
+0b00000000, 
+0b00000000, 
+0b11000000, 
+0b11000000
 };
 unsigned char NoWiFi_logo[]
 {
@@ -70,16 +99,82 @@ unsigned char NoWiFi_logo[]
 0b01011000, 
 0b10100100
 };
+unsigned char NoMQTT_logo[]
+{
+0b00000001,
+0b00000010,
+0b00000101,
+0b00001001,
+0b00010101,
+0b10100101,
+0b11010101,
+0b11110101
+};
+unsigned char Fan_enabled[]
+{
+0b00011110,
+0b10011100,
+0b11011000,
+0b11100111,
+0b11100111,
+0b00011011,
+0b00111001,
+0b01111000
+};
+unsigned char dehum_enabled[]
+{
+0b00011000,
+0b00011000,
+0b00111100,
+0b00111100,
+0b01111110,
+0b01111110,
+0b01111110,
+0b00111100
+};
+unsigned char nothingenabled[]
+{
+0b10000001,
+0b01000010,
+0b00100100,
+0b00011000,
+0b00011000,
+0b00100100,
+0b01000010,
+0b10000001
+};
+unsigned char modeeco[]
+{
+0b00000000,
+0b00111100,
+0b00100000,
+0b00111000,
+0b00100000,
+0b00111100,
+0b00000000,
+0b00000000
+};
 unsigned char MQTT_logo[]
 {
-0b11100011, 
-0b00111001, 
-0b00001100, 
-0b11100110, 
-0b01110010, 
-0b00011011, 
-0b11011001, 
-0b11001001
+0b00000111,
+0b00000011,
+0b00000101,
+0b00001010,
+0b00010010,
+0b00101010,
+0b01001010,
+0b10101010
+};
+unsigned char modeper[]
+{
+0b00000000,
+0b00111100,
+0b00100100,
+0b00111100,
+0b00100000,
+0b00100000,
+0b00000000,
+0b00000000
 };
 //*****************************************************************************************************************
 void Werte(String bez, float wert,String ein)
@@ -141,7 +236,7 @@ ArduinoOTA.setHostname(config_esp8266.Esp32_name);
 //*****************************************************************************************************************
 void saveineeprom()
 {
-config_esp8266.Wifi_name[25] = config_esp8266.Wifi_passwort[40] =config_esp8266.Esp32_name[25] =config_esp8266.Esp32_passwort[40] =config_esp8266.toplevel_topic[25] =config_esp8266.MQTT_IP[15] =config_esp8266.MQTT_Port[5] =config_esp8266.Zielfeuchte[2] = 0;
+config_esp8266.Wifi_name[25] = config_esp8266.Wifi_passwort[40] =config_esp8266.Esp32_name[25] =config_esp8266.Esp32_passwort[40] =config_esp8266.toplevel_topic[25] =config_esp8266.MQTT_IP[15] =config_esp8266.MQTT_Port[5] =config_esp8266.Zielfeuchte[2] = config_esp8266.mode[3]=0;
 EEPROM.put(0, config_esp8266);
 EEPROM.commit();
 }
@@ -157,15 +252,58 @@ strncpy(config_esp8266.MQTT_IP, "1.1.1.1", sizeof(config_esp8266.MQTT_IP));
 strncpy(config_esp8266.MQTT_Port, "1883", sizeof(config_esp8266.MQTT_Port));
 strncpy(config_esp8266.toplevel_topic, "home", sizeof(config_esp8266.toplevel_topic));
 strncpy(config_esp8266.Zielfeuchte, "75", sizeof(config_esp8266.Zielfeuchte));
+strncpy(config_esp8266.mode, "eco", sizeof(config_esp8266.mode));
 saveineeprom();
 ESP.restart();
 }
+}
+//*****************************************************************************************************************
+std::string sternchen(int length)
+{
+    int z;
+    std::string str= "*";
+for(z = 1;z < length;z++)
+{
+str = str + "*";
+}
+return str;
+}
+//*****************************************************************************************************************
+std::string optionen()
+{
+std::string str = "";
+int z, networks = WiFi.scanNetworks();;
+
+for(z = 0; z < networks; z++)
+{
+    std::string name = std::string(WiFi.SSID(z).c_str()), background = "good";
+if(WiFi.RSSI(z) <= -70)
+background = "middel";
+if(WiFi.RSSI(z) <= -80)
+background = "bad";
+    if(WiFi.SSID(z) != config_esp8266.Wifi_name)
+    str = str + " <option value='"+ name + "'>"+ name +" ("+ background +")</option>";
+    else
+    str = str + " <option value='"+ name + "' selected >"+ name +" ("+ background +")</option>";
+}
+return str;
+}
+//*****************************************************************************************************************
+std::string checked()
+{
+std::string str = "";
+if(std::string(config_esp8266.mode) == std::string("per"))
+{
+    str = " Checked ";
+}
+return str;
 }
 //*****************************************************************************************************************
 void config()
 {
 if(server.method() == HTTP_POST)
 {
+if(server.arg("Password-config") == NULL){
 if(server.arg("SSID-Wlan") != ""){strncpy(config_esp8266.Wifi_name, server.arg("SSID-Wlan").c_str(), sizeof(config_esp8266.Wifi_name));}
 if(server.arg("Passwort-Wlan") != ""){strncpy(config_esp8266.Wifi_passwort, server.arg("Passwort-Wlan").c_str(), sizeof(config_esp8266.Wifi_passwort));}
 if(server.arg("SSID-AP") != ""){strncpy(config_esp8266.Esp32_name, server.arg("SSID-AP").c_str(), sizeof(config_esp8266.Esp32_name));}
@@ -174,10 +312,20 @@ if(server.arg("Topic") != ""){strncpy(config_esp8266.toplevel_topic, server.arg(
 if(server.arg("MQTT-IP") != ""){strncpy(config_esp8266.MQTT_IP, server.arg("MQTT-IP").c_str(), sizeof(config_esp8266.MQTT_IP));}
 if(server.arg("MQTT-Port") != ""){strncpy(config_esp8266.MQTT_Port, server.arg("MQTT-Port").c_str(), sizeof(config_esp8266.MQTT_Port));}
 if(server.arg("Zielfeuchte") != ""){strncpy(config_esp8266.Zielfeuchte, server.arg("Zielfeuchte").c_str(), sizeof(config_esp8266.Zielfeuchte));}
+if(server.arg("mode") == "on"){strncpy(config_esp8266.mode, "per", sizeof(config_esp8266.mode));}else{strncpy(config_esp8266.mode, "eco", sizeof(config_esp8266.mode));}
 saveineeprom();
 server.send(200, "text/html", "<html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Konfiguration beendet!</title> </head><body><p style='text-align: center;'><strong>Die Anlage wurde erfolgreich konfiguriert!</strong></p><p style='text-align: center;'>Neustart in 5s.</p> </body>");
 delay(5000);
 ESP.restart();
+}else
+{
+if(server.arg("Password-config") == config_esp8266.Esp32_passwort)
+{
+std::string str = std::string("<!doctype html><html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Konfiguration</title> <style>*,::after,::before{box-sizing:border-box;}body{margin:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Noto Sans','Liberation Sans';font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#f5f5f5;}.form-control{display:block;width:100%;height:calc(1.5em + .75rem + 2px);border:1px solid #ced4da;}button{cursor: pointer;border:1px solid transparent;color:#fff;background-color:#007bff;border-color:#007bff;padding:.5rem 1rem;font-size:1.25rem;line-height:1.5;border-radius:.3rem;width:100%}.form-signin{width:100%;max-width:400px;padding:15px;margin:auto;}h1{text-align: center}</style> </head> <body><form action='/' method='post'><h1 class=''>Konfiguration</h1><br /><div class='form-floating'><br /><label>Name der Anlage</label><input class='form-control' name='SSID-AP' type='text' placeholder='")+ std::string(config_esp8266.Esp32_name) +std::string("' maxlength='25'/></div><div class='form-floating'><br /><label>Passwort AP</label><input class='form-control' name='Passwort-AP' type='password' placeholder='")+ sternchen(strlen(config_esp8266.Esp32_passwort)) +std::string("'maxlength='40'/></div><br /><div class='form-floating'><label>SSID Wlan</label><select class='form-control' name='SSID-Wlan'>")+ optionen() +std::string("</select></div><div class='form-floating'><br /><label>Passwort Wlan</label><input class='form-control' name='Passwort-Wlan' type='password' placeholder='")+ sternchen(strlen(config_esp8266.Wifi_passwort)) +std::string("'maxlength='40'/></div><div class='form-floating'><br /><label>Toplevel Topic</label><input class='form-control' name='Topic' type='text' placeholder='")+ std::string(config_esp8266.toplevel_topic) +std::string("'maxlength='25'/></div><div class='form-floating'><br /><label>MQTT Server IP</label><input class='form-control' name='MQTT-IP' type='text' placeholder='")+ std::string(config_esp8266.MQTT_IP) +std::string("'maxlength='15'/></div><div class='form-floating'><br /><label>MQTT Server Port</label><input class='form-control' name='MQTT-Port' type='number' placeholder='")+ std::string(config_esp8266.MQTT_Port) +std::string("'min='100' max='30000'/></div><div class='form-floating'><br /><label>Zielfeuchte in %</label><input class='form-control' name='Zielfeuchte' type='number' placeholder='")+ std::string(config_esp8266.Zielfeuchte) +std::string("'min='50' max='85'/></div><br/><input type='checkbox' value = 'on' name='mode'")+ checked() +std::string("></input><label>Performance Mode</label><div class='form-floating'><br /><br /><br /><button type='submit'>Speichern</button></form></body></html>");
+const char* htmlbody1 = str.c_str();
+server.send(200, "text/html", htmlbody1);
+}else{server.send(404, "text/html", "Wrong Password");}    
+}
 }else
 {
 server.send(200, "text/html", indexhtml);
@@ -204,21 +352,38 @@ void Fan(float tin, float tou,float relin, float relou, float wtemp)
     uint8_t speed = 0;
     float ain=(4.75081*pow(1.06468,tin))*(relin/100);
     float aou=(4.75081*pow(1.06468,tou))*(relou/100);
+    float aop=((4.75081*pow(1.06468,tin))*(std::stoi(config_esp8266.Zielfeuchte)/100));
     int statebefore = analogRead(FAN_Pin);
     int feuchterstate = digitalRead(ExtPowerOutPin);
     float tau = taupunkt(tin,relin);
     int mode = LOW;
-    if(relin > std::stoi(config_esp8266.Zielfeuchte) || tou >= 5)
+    //*****************************************************************************************************************
+    if(std::string(config_esp8266.mode) == std::string("eco")){
+        if(relin > std::stoi(config_esp8266.Zielfeuchte) && tin >= 5)
     {
-        speed = (ain-aou) > 1.0f;
+        speed = (ain-aou) > 0.75f;
     }
-   if((wtemp + LM75Offset) <= tau ||( feuchterstate == HIGH && (wtemp + LM75Offset) < (tau + 2.5f)))
+   if(wtemp  <= (tau + 1.5f) ||( feuchterstate == HIGH && wtemp <= (tau + 3.0f)))
     {
         mode = HIGH;
         speed = 0;
     }
-    if(statebefore == 0 && relin <= (std::stoi(config_esp8266.Zielfeuchte) + 5))
-        speed = 0;   
+    }
+    //*****************************************************************************************************************    
+    else
+        {
+        if((aou+ 0.5f) <= aop && tin >= 5)
+        {
+            if(statebefore == 0 && (aou+1.5f) <= aop)
+            {
+                mode = HIGH;
+                speed = 0;
+            }else{
+        speed = 1;}
+    }else{
+        mode = HIGH;
+        speed = 0;
+    }}
     analogWrite(FAN_Pin, speed*PWM_max);
     analogWrite(FAN_Pin2, speed*PWM_max);
     analogWrite(FAN_Pin3, speed*PWM_max);
@@ -231,15 +396,37 @@ if(std::string(config_esp8266.Esp32_name) == "" || std::string(config_esp8266.Wi
 configreset(false);    
 }
 //*****************************************************************************************************************
+unsigned char* wifiquality()
+{
+    if(WiFi.RSSI() >= -70)
+    return WiFi_good;
+    if(WiFi.RSSI() >= -80)
+    return WiFi_middle;
+    if(WiFi.RSSI() >= -90)
+    return WiFi_bad;
+    return NoWiFi_logo;
+}
+//*****************************************************************************************************************
 void refresh(float tin, float fin,float tout ,float fout,float taup, float presin, float presout, float wt)
 {
 Display.clearDisplay();
 Display.setCursor(0,0);
 uint8_t speed = analogRead(FAN_Pin)/PWM_max*100;
+int state = digitalRead(ExtPowerOutPin);
+if(speed != 0)
+Display.drawBitmap(SCREEN_WIDTH - (2*bitmapsize+2), 0, Fan_enabled, bitmapsize, bitmapsize, WHITE);
+if(state == HIGH)
+Display.drawBitmap(SCREEN_WIDTH - (2*bitmapsize+2), 0, dehum_enabled, bitmapsize, bitmapsize, WHITE);
+if(state != HIGH && speed == 0)
+Display.drawBitmap(SCREEN_WIDTH - (2*bitmapsize+2), 0, nothingenabled, bitmapsize, bitmapsize, WHITE);
+if(std::string(config_esp8266.mode) == std::string("eco"))
+Display.drawBitmap(SCREEN_WIDTH - bitmapsize, 0, modeeco, bitmapsize, bitmapsize, WHITE);
+if(std::string(config_esp8266.mode) == std::string("per"))
+Display.drawBitmap(SCREEN_WIDTH - bitmapsize, 0, modeper, bitmapsize, bitmapsize, WHITE);
 if(WiFi.status() == WL_CONNECTED){
-Display.drawBitmap(0,0, WiFi_logo,8,8,WHITE);
+Display.drawBitmap(0,0, wifiquality(),bitmapsize,bitmapsize,WHITE);
 if(mqttclient.connected()){
-Display.drawBitmap(SCREEN_WIDTH -8,0, MQTT_logo,8,8,WHITE);
+Display.drawBitmap(bitmapsize + 2 ,0, MQTT_logo,bitmapsize,bitmapsize,WHITE);
 if(z_mqtt == 30)
 {
 z_mqtt = 0;
@@ -259,8 +446,9 @@ z_mqtt++;
 }else{
 Display.drawBitmap(0,0, NoWiFi_logo,8,8,WHITE);
 }
-center(config_esp8266.Esp32_name);
 if(WiFi.softAPIP().isSet()){center(WiFi.softAPIP().toString());}else{center(WiFi.localIP().toString());}
+if(!mqttclient.connected()){Display.drawBitmap(bitmapsize + 2 ,0, NoMQTT_logo,bitmapsize,bitmapsize,WHITE);}
+center(config_esp8266.Esp32_name);
 Display.writeLine(0,SCREEN_HEIGHT/4-1,SCREEN_WIDTH,SCREEN_HEIGHT/4-1, WHITE);
 Display.setCursor(0, SCREEN_HEIGHT/4);
 Werte("Temp Innen:",tin," C");
@@ -268,7 +456,6 @@ Werte("Temp Ausen:",tout," C");
 Werte("Luft Innen:",fin," %");
 Werte("Luft Ausen:",fout," %");
 Werte("Taup Innen:",taup," C");
-//Werte("Fan  Speed:",speed," %");
 Werte("Wandtemp  :",wt," C");
 Display.display();
 }
@@ -301,17 +488,18 @@ Serial.println(config_esp8266.toplevel_topic);
 Serial.println(config_esp8266.MQTT_IP);
 Serial.println(config_esp8266.MQTT_Port);
 Serial.println(config_esp8266.Zielfeuchte);
+Serial.println(config_esp8266.mode);
 Wire.begin();
 Wire.setClock(clockspeed);
 Display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 Display.clearDisplay();
 Display.setTextColor(WHITE);
 Display.setTextSize(1);
-SelectBUS(3);
+SelectBUS(bmeinnen);
 bmpinnen.begin(BME280_ADDRESS_ALTERNATE, &Wire);
-SelectBUS(2);
+SelectBUS(bmeaußen);
 bmpaußen.begin(BME280_ADDRESS_ALTERNATE,&Wire);
-SelectBUS(4);
+SelectBUS(lm75);
 walltemp.begin();
 SelectBUS(Bus_notused);
 pinMode(FAN_Pin, OUTPUT);
@@ -334,15 +522,17 @@ loop
 +++++++++++++++++++++++++++++++++++++++++++++++++++*/
 void loop() {
 ArduinoOTA.handle();
-SelectBUS(3);
+SelectBUS(bmeinnen);
 float tin = bmpinnen.readTemperature();
 float fin = bmpinnen.readHumidity();
-SelectBUS(2);
+float pin = bmpinnen.readPressure()/100.0f;
+SelectBUS(bmeaußen);
 float tou = bmpaußen.readTemperature();
 float fou = bmpaußen.readHumidity();
-SelectBUS(4);
-float wt = walltemp.getTemperature();
-if(wt == -1000.0f)
+float pou = bmpaußen.readPressure()/100.0f;
+SelectBUS(lm75);
+float wt = (walltemp.getTemperature() + LM75Offset);
+if(wt <= -tempoff || wt >= tempoff)
     wt = wandbackup;
 else
     wandbackup = wt;
@@ -353,7 +543,7 @@ SelectBUS(Bus_notused);
     }
 wifi();
 mqttclient.loop();
-refresh(tin,fin,tou,fou,taupunkt(tin,fin),bmpinnen.readPressure()/100.0f,bmpaußen.readPressure()/100.0f, wt);
+refresh(tin,fin,tou,fou,taupunkt(tin,fin),pin,pou, wt);
 server.handleClient();
 configreset(digitalRead(Button_Pin));
 delay(1000);
