@@ -24,6 +24,7 @@
 #define bmeaußen 2
 #define lm75 4
 #define bitmapsize 8
+#define workingdelay 1000
 uint8_t FAN_Pin = D5;
 uint8_t FAN_Pin2 = D6;
 uint8_t FAN_Pin3 = D8;
@@ -361,7 +362,7 @@ void Fan(float tin, float tou,float relin, float relou, float wtemp)
     if(std::string(config_esp8266.mode) == std::string("eco")){
         if(relin > std::stoi(config_esp8266.Zielfeuchte) && tin >= 5)
     {
-        speed = (ain-aou) > 0.75f;
+        speed = (ain-aou) > 0.25f;
     }
    if(wtemp  <= (tau + 1.5f) ||( feuchterstate == HIGH && wtemp <= (tau + 3.0f)))
     {
@@ -413,6 +414,8 @@ Display.clearDisplay();
 Display.setCursor(0,0);
 uint8_t speed = analogRead(FAN_Pin)/PWM_max*100;
 int state = digitalRead(ExtPowerOutPin);
+int16_t x,y;
+uint16_t w,h;
 if(speed != 0)
 Display.drawBitmap(SCREEN_WIDTH - (2*bitmapsize+2), 0, Fan_enabled, bitmapsize, bitmapsize, WHITE);
 if(state == HIGH)
@@ -546,5 +549,5 @@ mqttclient.loop();
 refresh(tin,fin,tou,fou,taupunkt(tin,fin),pin,pou, wt);
 server.handleClient();
 configreset(digitalRead(Button_Pin));
-delay(1000);
+delay(workingdelay);
 }
