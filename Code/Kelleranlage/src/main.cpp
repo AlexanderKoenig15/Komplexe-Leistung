@@ -25,6 +25,7 @@
 #define lm75 4
 #define bitmapsize 8
 #define workingdelay 1000
+#define debug_mode false
 uint8_t FAN_Pin = D5;
 uint8_t FAN_Pin2 = D6;
 uint8_t FAN_Pin3 = D8;
@@ -279,7 +280,7 @@ for(z = 0; z < networks; z++)
 {
     std::string name = std::string(WiFi.SSID(z).c_str()), background = "good";
 if(WiFi.RSSI(z) <= -70)
-background = "middel";
+background = "middle";
 if(WiFi.RSSI(z) <= -80)
 background = "bad";
     if(WiFi.SSID(z) != config_esp8266.Wifi_name)
@@ -348,31 +349,39 @@ float taupunkt(float temp, float humid)
     return tau;
 }
 //*****************************************************************************************************************
+float abs(float temp, float humid)
+{
+float result;
+result = (4.75081*pow(1.06468,temp))*(humid/100);
+return result;
+}
+//*****************************************************************************************************************
 void Fan(float tin, float tou,float relin, float relou, float wtemp)
 {
     uint8_t speed = 0;
-    float ain=(4.75081*pow(1.06468,tin))*(relin/100);
-    float aou=(4.75081*pow(1.06468,tou))*(relou/100);
-    float aop=((4.75081*pow(1.06468,tin))*(std::stoi(config_esp8266.Zielfeuchte)/100));
+    float ain= abs(tin, relin);
+    float aou= abs(tou, relou);
+    float aop= abs(tin, std::stoi(config_esp8266.Zielfeuchte));
     int statebefore = analogRead(FAN_Pin);
     int feuchterstate = digitalRead(ExtPowerOutPin);
     float tau = taupunkt(tin,relin);
     int mode = LOW;
-    //*****************************************************************************************************************
+    //Eco Mode*****************************************************************************************************************
     if(std::string(config_esp8266.mode) == std::string("eco")){
-        if(relin > std::stoi(config_esp8266.Zielfeuchte) && tin >= 5)
+    if(relin > std::stoi(config_esp8266.Zielfeuchte) && tin >= 5)
     {
-        speed = (ain-aou) > 0.25f;
+        speed = ain-aou > 0.5f;
     }
-   if(wtemp  <= (tau + 1.5f) ||( feuchterstate == HIGH && wtemp <= (tau + 3.0f)))
+    if(speed != 1)
     {
-        mode = HIGH;
-        speed = 0;
-    }
-    }
-    //*****************************************************************************************************************    
-    else
+        if(tau >= (wtemp -1.5f)||( feuchterstate == HIGH && wtemp <= (tau +3.5f)))
         {
+        mode = HIGH;
+        }else{mode = LOW;}
+    }
+    }
+    //Performance Mode*****************************************************************************************************************   
+    if(std::string(config_esp8266.mode) == std::string("per")){ 
         if((aou+ 0.5f) <= aop && tin >= 5)
         {
             if(statebefore == 0 && (aou+1.5f) <= aop)
@@ -414,8 +423,6 @@ Display.clearDisplay();
 Display.setCursor(0,0);
 uint8_t speed = analogRead(FAN_Pin)/PWM_max*100;
 int state = digitalRead(ExtPowerOutPin);
-int16_t x,y;
-uint16_t w,h;
 if(speed != 0)
 Display.drawBitmap(SCREEN_WIDTH - (2*bitmapsize+2), 0, Fan_enabled, bitmapsize, bitmapsize, WHITE);
 if(state == HIGH)
@@ -426,14 +433,19 @@ if(std::string(config_esp8266.mode) == std::string("eco"))
 Display.drawBitmap(SCREEN_WIDTH - bitmapsize, 0, modeeco, bitmapsize, bitmapsize, WHITE);
 if(std::string(config_esp8266.mode) == std::string("per"))
 Display.drawBitmap(SCREEN_WIDTH - bitmapsize, 0, modeper, bitmapsize, bitmapsize, WHITE);
-if(WiFi.status() == WL_CONNECTED){
+if(WiFi.status() == WL_CONNECTED)
 Display.drawBitmap(0,0, wifiquality(),bitmapsize,bitmapsize,WHITE);
-if(mqttclient.connected()){
+else
+Display.drawBitmap(0,0, NoWiFi_logo,8,8,WHITE);
+if(mqttclient.connected())
 Display.drawBitmap(bitmapsize + 2 ,0, MQTT_logo,bitmapsize,bitmapsize,WHITE);
+else
+Display.drawBitmap(bitmapsize + 2 ,0, NoMQTT_logo,bitmapsize,bitmapsize,WHITE);
 if(z_mqtt == 30)
 {
 z_mqtt = 0;
-Fan(tin,tout,round(fin),round(fout), wt);
+Fan(tin,tout,fin,fout, wt);
+if(WiFi.status() == WL_CONNECTED && mqttclient.connected()){
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/InPressure")).c_str(),String(presin).c_str());
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/OutPressure")).c_str(),String(presout).c_str());
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/Fan2Pwm")).c_str(),String(speed).c_str());
@@ -443,23 +455,27 @@ mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std:
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/OutTemp")).c_str(),String(tout).c_str());
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/InTemp")).c_str(),String(tin).c_str());
 mqttclient.publish(std::string(std::string(config_esp8266.toplevel_topic) + std::string("/GroundTemp")).c_str(),String(wt).c_str());
-}
+}}
 z_mqtt++;
-}
-}else{
-Display.drawBitmap(0,0, NoWiFi_logo,8,8,WHITE);
-}
 if(WiFi.softAPIP().isSet()){center(WiFi.softAPIP().toString());}else{center(WiFi.localIP().toString());}
-if(!mqttclient.connected()){Display.drawBitmap(bitmapsize + 2 ,0, NoMQTT_logo,bitmapsize,bitmapsize,WHITE);}
 center(config_esp8266.Esp32_name);
 Display.writeLine(0,SCREEN_HEIGHT/4-1,SCREEN_WIDTH,SCREEN_HEIGHT/4-1, WHITE);
 Display.setCursor(0, SCREEN_HEIGHT/4);
-Werte("Temp Innen:",tin," C");
-Werte("Temp Ausen:",tout," C");
-Werte("Luft Innen:",fin," %");
-Werte("Luft Ausen:",fout," %");
-Werte("Taup Innen:",taup," C");
-Werte("Wandtemp  :",wt," C");
+#if debug_mode == false
+Werte("Temp In:",tin," C");
+Werte("Temp Au:",tout," C");
+Werte("Luft In:",abs(tin, fin),String("-" + String(fin) + "%"));
+Werte("Luft Au:",abs(tout, fout),String("-" + String(fout) + "%"));
+Werte("Taup In:",taup," C");
+Werte("Wandtmp:",wt," C");
+#else
+float absin = abs(tin, fin);
+float absout = abs(tout, fout);
+Werte("Luft In:",absin,"");
+Werte("Luft Au:",absout,"");
+bool lueften = absin-absout > 0.5f;
+Werte("Lueften :",absin-absout, "/" + String(lueften));
+#endif
 Display.display();
 }
 //*****************************************************************************************************************
