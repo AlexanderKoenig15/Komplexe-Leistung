@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang='de'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>Konfiguration</title>
+    <style>
+:root
+{
+    background-color: whitesmoke;
+}
+body
+{
+    font-size: large;
+}
+div
+{
+    background-color: transparent;
+}
+.formunterfeld
+{
+    border: 2px solid;
+    border-radius: 5px;
+    padding: 5px;
+    margin: 15px;
+}
+input
+{
+border-radius: 5px;
+border: 1px solid;
+font-size: large;
+margin: auto;
+width: 100px;
+}
+select
+{
+border-radius: 5px;
+border: 1px solid;
+font-size: large;
+margin: auto;
+width: 100px;
+}
+.formfeld
+{
+    padding: 5px;
+    border: hidden;
+}
+input[type='submit']
+{
+    background-color: lightskyblue;
+    width: 100%;
+    margin: auto;
+    padding: 5px;
+    transition-duration: 50ms ;
+}
+input[type='submit']:hover
+{
+position: relative;
+top: -2px;
+background-color: aqua;
+}
+    </style>
+</head>
+<body>
+<form method='post' name='configform'>
+    <h1>
+        %s
+    </h1>
+    <div class='formunterfeld'>
+        <h4>
+        Allgemeines 
+        </h4>
+            <div class='formfeld'>
+                <label >Name der Anlage</label>
+                <br>
+                <input type='text' name='SSID-AP' placeholder='%s'>
+            </div>
+            <div class='formfeld'>
+                <label >Passwort</label>
+                <br>
+                <input type='password' name='Passwort-AP' >
+            </div>
+            <div class='formfeld'>
+                <label >Wlan</label>
+                <br>
+                <select name='SSID-Wlan'>
+                    %s
+                </select>
+            </div>
+            <div class='formfeld'>
+                <label >Wlan Passwort</label>
+                <br>
+                <input type='password' name='Passwort-Wlan'>
+            </div>
+    </div>
+    <div class='formunterfeld'>
+        <h4>
+            MQTT
+        </h4>
+        <div class='formfeld'>
+            <label >Toplevel Topic</label>
+            <br>
+            <input type='text' name='Topic' placeholder='%s'>
+        </div>
+        <div class='formfeld'>
+            <label >Server IP</label>
+            <br>
+            <input type='text' name='MQTT-IP' placeholder='%s'>
+        </div>
+        <div class='formfeld'>
+            <label >Server Port</label>
+            <br>
+            <input type='text' name='MQTT-Port' placeholder='%s'>
+        </div>
+    </div>
+    <div class='formunterfeld'>
+        <h4>
+            Performance Einstellungen
+        </h4>
+        <div class='formfeld'>
+            <label >Zielfeuchte</label>
+            <br>
+            <input type='range' name='Zielfeuchte' id='Zielfeuchte' min='0' max='100' value=%s>
+            <label id='rangezielfeuchte'>%s%</label>
+        </div>
+        <div class='formfeld'>
+            <label >Modus</label>
+            <br>
+            <select form='configform'>
+                <option>per</option>
+                <option selected>eco</option>
+            </select>
+            <label>
+            Derzeit: %s
+            </label>
+        </div>
+        <div class='formfeld'>
+            <label >Lüfterdrehzahl</label>
+            <br>
+            <input type='range'name='PWM' id='PWM' min='0' max='100' value=%s>
+            <label id='rangepwm'>%s%</label>
+        </div>
+        <input type='submit' value='Speichern'>
+    </div>
+</form>
+<script>
+    var rangezielfeuchte = document.getElementById('Zielfeuchte');
+    var rangepwm = document.getElementById('PWM');
+    var zielfeuchte = document.getElementsById('rangezielfeuchte');
+    var pwm = document.getElementsById('rangepwm');
+    pwm.addEventListener('change', ()=>
+    {
+        rangepwm.value = pwm.innerHTML + '%';
+    })
+    zielfeuchte.addEventListener('change', ()=>
+    {
+        rangezielfeuchte.value = zielfeuchte.innerHTML + '%';
+    })
+</script>
+</body>
+</html>
