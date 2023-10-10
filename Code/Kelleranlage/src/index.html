@@ -120,15 +120,15 @@ background-color: aqua;
         <div class='formfeld'>
             <label >Zielfeuchte</label>
             <br>
-            <input type='range' name='Zielfeuchte' id='Zielfeuchte' min='0' max='100' value=%s>
-            <label id='rangezielfeuchte'>%s%</label>
+            <input type='number' name='Zielfeuchte' id='Zielfeuchte' min='0' max='100' value=%s required>
+            <label>%</label>
         </div>
         <div class='formfeld'>
             <label >Modus</label>
             <br>
-            <select form='configform'>
-                <option>per</option>
-                <option selected>eco</option>
+            <select name='mode'>
+                <option value='per'>per</option>
+                <option value='eco' selected>eco</option>
             </select>
             <label>
             Derzeit: %s
@@ -137,25 +137,11 @@ background-color: aqua;
         <div class='formfeld'>
             <label >Lüfterdrehzahl</label>
             <br>
-            <input type='range'name='PWM' id='PWM' min='0' max='100' value=%s>
-            <label id='rangepwm'>%s%</label>
+            <input type='number' name='PWM' id='PWM' min='0' max='100' value=%s required>
+            <label>%</label>
         </div>
         <input type='submit' value='Speichern'>
     </div>
 </form>
-<script>
-    var rangezielfeuchte = document.getElementById('Zielfeuchte');
-    var rangepwm = document.getElementById('PWM');
-    var zielfeuchte = document.getElementsById('rangezielfeuchte');
-    var pwm = document.getElementsById('rangepwm');
-    pwm.addEventListener('change', ()=>
-    {
-        rangepwm.value = pwm.innerHTML + '%';
-    })
-    zielfeuchte.addEventListener('change', ()=>
-    {
-        rangezielfeuchte.value = zielfeuchte.innerHTML + '%';
-    })
-</script>
 </body>
 </html>
